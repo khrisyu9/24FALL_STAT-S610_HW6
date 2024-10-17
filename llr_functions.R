@@ -14,11 +14,13 @@ compute_f_hat = function(z, x, y, omega) {
   Wz = W(distances)  # Vector of weights
   X = make_predictor_matrix(x)
   
-  # Apply Wz vector to each column of X and to y
-  weighted_X = apply(X, 2, function(col) Wz * col)
+  # Use the sweep function to apply weights element-wise to X (equivalent to Wz %*% X)
+  weighted_X = sweep(X, 1, Wz, `*`)
+  
+  # Apply the weights to y in a vectorized way (equivalent to Wz %*% y)
   weighted_y = Wz * y
   
-  # Compute f_hat using the weighted_X and weighted_y
+  # Compute f_hat using the modified weighted_X and weighted_y
   f_hat = c(1, z) %*% solve(t(weighted_X) %*% X) %*% t(weighted_X) %*% weighted_y
   return(f_hat)
 }
