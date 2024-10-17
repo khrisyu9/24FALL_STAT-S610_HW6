@@ -6,9 +6,20 @@ llr = function(x, y, z, omega) {
 
 # Compute f hat function:
 compute_f_hat = function(z, x, y, omega) {
-  Wz = make_weight_matrix(z, x, omega)
+  # Compute the weights as a vector instead of a diagonal matrix
+  W = function(r) {
+      ifelse(abs(r) < 1, (1 - abs(r)^3)^3, 0)
+  }
+  distances = abs(x - z) / omega
+  Wz = W(distances)  # Vector of weights
   X = make_predictor_matrix(x)
-  f_hat = c(1, z) %*% solve(t(X) %*% Wz %*% X) %*% t(X) %*% Wz %*% y
+  
+  # Apply Wz vector to each column of X and to y
+  weighted_X = apply(X, 2, function(col) Wz * col)
+  weighted_y = Wz * y
+  
+  # Compute f_hat using the weighted_X and weighted_y
+  f_hat = c(1, z) %*% solve(t(weighted_X) %*% X) %*% t(weighted_X) %*% weighted_y
   return(f_hat)
 }
 
